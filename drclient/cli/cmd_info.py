@@ -18,6 +18,7 @@ def info(
     """
     registry, repository, tag = DockerRegistryClient.parse_image_url(image_name)
     drc = DockerRegistryClient(registry)
+    drc.authenticate()
     manifest = drc.get_manifest(repository, tag, expand_config=True)
     if output_format == "json":
         print(json.dumps(manifest, indent=4))

@@ -1,11 +1,7 @@
 # drclient
-A docker registry client command line utility and Python library.
+A docker registry client command line utility and Python library
 
 [![PyPi](https://img.shields.io/pypi/v/drclient.svg?style=flat-square)](https://pypi.python.org/pypi/drclient)
-
-[![Open Issues](https://img.shields.io/github/issues/joaompinto/drclient](https://img.shields.io/github/issues/joaompinto/drclient)
-
-
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
 
 
