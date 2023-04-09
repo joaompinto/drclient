@@ -2,6 +2,10 @@
 import tarfile
 from pathlib import Path
 
+tarfile.os.chown = (
+    lambda x, y, z: 0
+)  # Monkey patch chown because we don't care about ownership
+
 tarfile.os.mknod = (
     lambda x, y, z: 0
 )  # Monkey patch mknod because some layers include devices

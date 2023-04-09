@@ -3,6 +3,7 @@ import os
 import shutil
 import tarfile
 from pathlib import Path
+from subprocess import getstatusoutput
 from tempfile import mkdtemp
 
 import typer
@@ -18,6 +19,9 @@ def pull(
     tar_file: Path = typer.Option(
         None, "-t", "--tar-file", help="Output to a tar.gz file"
     ),
+    squafshfs_file: Path = typer.Option(
+        None, "-s", "--squashfs-file", help="Output to a .sqfs file"
+    ),
     output_directory: Path = typer.Option(
         None, "-d", "--output-directory", help="Output to a directory"
     ),
@@ -25,9 +29,6 @@ def pull(
     """
     Pull image from a docker registry
     """
-    if tar_file and output_directory:
-        raise typer.BadParameter("Cannot specify both output file and output directory")
-
     registry, repository, tag = DockerRegistryClient.parse_image_url(image_name)
     source_reference = f"{registry}/{repository}:{tag}"
 
@@ -43,10 +44,12 @@ def pull(
     )
 
     if output_directory is None:
+        is_tmp_output_directory = True
         output_directory = mkdtemp()
         if tar_file:
             atexit.register(shutil.rmtree, output_directory)
     else:
+        is_tmp_output_directory = False
         if not output_directory.exists():
             output_directory.mkdir(parents=True)
         else:
@@ -61,11 +64,24 @@ def pull(
                 )
 
     pull_layers_in_threads(drc, layers, output_directory)
+    print("Extracting layers...", end="", flush=True)
     extract_layers(layers, Path(output_directory))
+    print("Done")
     if tar_file:
         os.chdir(output_directory)
         with tarfile.open(tar_file, "w:gz") as tar:
             tar.add(".", recursive=True)
-        os.chdir("/")
-    else:
+
+    if squafshfs_file:
+        if squafshfs_file.exists():
+            squafshfs_file.unlink()
+        print("Creating squashfs file...", end="", flush=True)
+        exit_code, output = getstatusoutput(
+            f"mksquashfs {output_directory} {squafshfs_file}"
+        )
+        if exit_code != 0:
+            raise typer.Exit(f"Failed to create squashfs file: {output}")
+        print("Done")
+
+    if not is_tmp_output_directory:
         print(f"Contents of {source_reference} extracted to {output_directory}")
