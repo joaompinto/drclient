@@ -29,6 +29,7 @@ def pull(
     """
     Pull image from a docker registry
     """
+    is_tmp_output_directory = False
     registry, repository, tag = DockerRegistryClient.parse_image_url(image_name)
     source_reference = f"{registry}/{repository}:{tag}"
 
@@ -44,12 +45,11 @@ def pull(
     )
 
     if output_directory is None:
-        is_tmp_output_directory = True
         output_directory = mkdtemp()
-        if tar_file:
+        if tar_file or squafshfs_file:
+            is_tmp_output_directory = True
             atexit.register(shutil.rmtree, output_directory)
     else:
-        is_tmp_output_directory = False
         if not output_directory.exists():
             output_directory.mkdir(parents=True)
         else:
@@ -68,9 +68,11 @@ def pull(
     extract_layers(layers, Path(output_directory))
     print("Done")
     if tar_file:
+        cwd = os.getcwd()
         os.chdir(output_directory)
         with tarfile.open(tar_file, "w:gz") as tar:
-            tar.add(".", recursive=True)
+            tar.add(".", arcname="", recursive=True)
+        os.chdir(cwd)
 
     if squafshfs_file:
         if squafshfs_file.exists():
