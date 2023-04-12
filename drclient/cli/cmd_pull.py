@@ -50,6 +50,7 @@ def pull(
             is_tmp_output_directory = True
             atexit.register(shutil.rmtree, output_directory)
     else:
+        print(output_directory)
         if not output_directory.exists():
             output_directory.mkdir(parents=True)
         else:
@@ -75,6 +76,7 @@ def pull(
         os.chdir(cwd)
 
     if squafshfs_file:
+        squafshfs_file = Path(squafshfs_file)
         if squafshfs_file.exists():
             squafshfs_file.unlink()
         print("Creating squashfs file...", end="", flush=True)
