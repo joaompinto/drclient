@@ -1,4 +1,3 @@
-import os
 import re
 from pathlib import Path
 
@@ -7,7 +6,6 @@ import requests
 from .manifest import DockerManifest
 from .specs import Manifests
 
-DEFAULT_REGISTRY = os.environ.get("DOCKER_REGISTRY", "registry-1.docker.io")
 API_URL = "/v2/"
 
 
@@ -138,22 +136,3 @@ class DockerRegistryClient(object):
                             update_hook(len(data))
         else:
             return self._http_get(url, allow_redirects=True)
-
-    def parse_image_url(image_name: str) -> tuple:
-        registry = DEFAULT_REGISTRY
-        tag = "latest"
-        protocol_prefix = "https://"
-        protocol_mark = image_name.find("://")
-        if protocol_mark > -1:
-            protocol_prefix = image_name[: protocol_mark + 3]
-            image_name = image_name[protocol_mark + 3 :]
-        if "/" in image_name:
-            first_part, other_parts = image_name.split("/", 1)
-            if "." in first_part:
-                image_name = other_parts
-                registry = f"{protocol_prefix}{first_part}"
-        else:
-            image_name = f"library/{image_name}"
-        if ":" in image_name:
-            image_name, tag = image_name.split(":")
-        return registry, image_name, tag

@@ -3,6 +3,7 @@ from typing import Optional
 
 import typer
 
+from ..image import parse_image_url
 from ..registry import DockerRegistryClient
 from ..view.info import print_image_info
 
@@ -16,7 +17,7 @@ def info(
     """
     Show information for an image stored in a docker registry
     """
-    registry, repository, tag = DockerRegistryClient.parse_image_url(image_name)
+    registry, repository, tag = parse_image_url(image_name)
     drc = DockerRegistryClient(registry)
     drc.authenticate()
     manifest = drc.get_manifest(repository, tag, expand_config=True)
